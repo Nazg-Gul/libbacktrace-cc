@@ -25,13 +25,9 @@
 namespace bt {
 
 Symbolize *Symbolize::create(StackTrace *stack_trace) {
-#ifdef BACKTRACE_HAS_BFD
-  Symbolize *bfd_symbolie = internal::symbolize_create_bfd(stack_trace);
-  if (bfd_symbolie != NULL) {
-    return bfd_symbolie;
-  }
-#endif  // BACKTRACE_HAS_BFD
-#ifdef BACKTRACE_HAS_EXECINFO
+#if defined(BACKTRACE_HAS_BFD)
+  return internal::symbolize_create_bfd(stack_trace);
+#elif defined(BACKTRACE_HAS_EXECINFO)
   return internal::symbolize_create_execinfo(stack_trace);
 #else
   return internal::symbolize_create_stub(stack_trace);

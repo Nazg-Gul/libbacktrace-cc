@@ -24,6 +24,7 @@
 #define __BACKTRACE_UTIL_H__
 
 #include <cassert>
+#include <map>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -32,6 +33,7 @@ namespace bt {
 
 using std::string;
 using std::vector;
+using std::map;
 
 template<typename T>
 inline T hex_cast(const string& in) {
