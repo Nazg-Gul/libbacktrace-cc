@@ -49,6 +49,7 @@ class StackTraceExecinfo : public StackTrace {
   }
 
   TraceEntry operator[](size_t index) const {
+    assert(index < size());
     TraceEntry entry(backtrace_buffer_[index]);
     return entry;
   }

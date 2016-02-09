@@ -38,10 +38,10 @@ namespace {
 class SymbolizeExecinfo : public Symbolize {
  public:
   SymbolizeExecinfo() : Symbolize() {}
-  explicit SymbolizeExecinfo(StackTrace *stack_trace)
-      : Symbolize(stack_trace) {
-    if (stack_trace_ != NULL) {
-      resolve(*stack_trace_);
+  explicit SymbolizeExecinfo(StackTrace *stacktrace)
+      : Symbolize(stacktrace) {
+    if (stacktrace_ != NULL) {
+      resolve(*stacktrace_);
     }
   }
 
@@ -97,8 +97,8 @@ class SymbolizeExecinfo : public Symbolize {
 
 }  // namespace
 
-Symbolize *symbolize_create_execinfo(StackTrace *stack_trace) {
-  return new SymbolizeExecinfo(stack_trace);
+Symbolize *symbolize_create_execinfo(StackTrace *stacktrace) {
+  return new SymbolizeExecinfo(stacktrace);
 }
 
 }  // namespace internal

@@ -22,16 +22,27 @@
 
 #include "backtrace/symbolize.h"
 
+#ifdef BACKTRACE_HAS_SYM_FROM_ADDR
+
+// Maximum symbol length.
+#define MAX_SYMBOL 256
+
+#include <windows.h>
+#include <dbghelp.h>
+
+// TODO(sergey): Consider moving this to CMakeLists.
+#pragma comment(lib, "dbghelp.lib")
+
 namespace bt {
 namespace internal {
 
 namespace {
 
-// Stub sybolize implementation.
-class SymbolizeStub : public Symbolize {
+// Sybolize implementation using SymFromAddr().
+class SymbolizeSymFromAddr : public Symbolize {
  public:
-  SymbolizeStub() : Symbolize() {}
-  explicit SymbolizeStub(StackTrace *stacktrace)
+  SymbolizeSymFromAddr() : Symbolize() {}
+  explicit SymbolizeSymFromAddr(StackTrace *stacktrace)
       : Symbolize(stacktrace) {
     if (stacktrace_ != NULL) {
       resolve(*stacktrace_);
@@ -39,18 +50,48 @@ class SymbolizeStub : public Symbolize {
   }
 
   void resolve(const StackTrace& stacktrace) {
+    // Make sure symbol table is initialized.
+    init_sym();
+    // Allocate some working memory.
+    const size_t total_size = sizeof(SYMBOL_INFO) + MAX_SYMBOL;
+    SYMBOL_INFO *symbol_info;
+    symbol_info = (SYMBOL_INFO *)::operator new(total_size);
+    symbol_info->MaxNameLen = MAX_SYMBOL - 1;
+    symbol_info->SizeOfStruct = sizeof(SYMBOL_INFO);
+    // Symbolize stacktrace.
+    HANDLE process = GetCurrentProcess();
     symbols_.resize(stacktrace.size());
     for (size_t i = 0; i < stacktrace.size(); ++i) {
       symbols_[i].address = (size_t)stacktrace[i].address;
+      if (SymFromAddr(process,
+                      (DWORD64)(stacktrace[i].address),
+                      0,
+                      symbol_info)) {
+        symbols_[i].address = symbol_info->Address;
+        symbols_[i].function_name = symbol_info->Name;
+      }
+    }
+    delete symbol_info;
+  }
+ private:
+  void init_sym() {
+    static bool sym_initialized = false;
+    if (!sym_initialized) {
+      HANDLE process = GetCurrentProcess();
+      SymInitialize(process, NULL, TRUE);
     }
   }
 };
 
 }  // namespace
 
-Symbolize *symbolize_create_stub(StackTrace *stacktrace) {
-  return new SymbolizeStub(stacktrace);
+Symbolize *symbolize_create_sym_from_addr(StackTrace *stacktrace) {
+  return new SymbolizeSymFromAddr(stacktrace);
 }
 
 }  // namespace internal
 }  // namespace bt
+
+#undef MAX_SYMBOL
+
+#endif  // BACKTRACE_HAS_SYM_FROM_ADDR

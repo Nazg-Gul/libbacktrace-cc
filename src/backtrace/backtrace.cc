@@ -33,9 +33,9 @@ namespace bt {
 namespace {
 
 string backtrace_get_string() {
-  StackTrace *stack_trace = StackTrace::create();
-  stack_trace->load(NULL, BACKTRACE_MAX_DEPTH);
-  Symbolize *symbolize = Symbolize::create(stack_trace);
+  StackTrace *stacktrace = StackTrace::create();
+  stacktrace->load(NULL, BACKTRACE_MAX_DEPTH);
+  Symbolize *symbolize = Symbolize::create(stacktrace);
 
   std::stringstream ss;
   for (size_t i = 0; i < symbolize->size(); ++i) {

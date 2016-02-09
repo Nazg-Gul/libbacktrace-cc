@@ -22,6 +22,8 @@
 
 #include "backtrace/symbolize.h"
 
+#ifdef BACKTRACE_HAS_BFD
+
 #include <bfd.h>
 #include <dlfcn.h>
 #include <limits.h>
@@ -30,8 +32,6 @@
 
 #include "backtrace/demangle.h"
 
-#ifdef BACKTRACE_HAS_BFD
-
 namespace bt {
 namespace internal {
 
@@ -39,21 +39,21 @@ namespace {
 
 class BfdSymbols {
  public:
-   BfdSymbols()
-       : bfd_(NULL),
-         symtab_(NULL),
-         dynamic_symtab_(NULL),
-         text_(NULL) {
-     init(self_object_name_get());
-   }
+  BfdSymbols()
+      : bfd_(NULL),
+        symtab_(NULL),
+        dynamic_symtab_(NULL),
+        text_(NULL) {
+    init(self_object_name_get());
+  }
 
-   BfdSymbols(const string& object_name)
-       : bfd_(NULL),
-         symtab_(NULL),
-         dynamic_symtab_(NULL),
-         text_(NULL) {
-     init(object_name);
-   }
+  BfdSymbols(const string& object_name)
+      : bfd_(NULL),
+        symtab_(NULL),
+        dynamic_symtab_(NULL),
+        text_(NULL) {
+    init(object_name);
+  }
 
   ~BfdSymbols() {
     if (dynamic_symtab_ != NULL) {
@@ -175,11 +175,11 @@ class BfdSymbols {
                                    SymbolInfoData *data) {
     SymbolInfo& info = data->info;
     // Information was already found.
-    if(info.found) {
+    if (info.found) {
       return;
     }
     // Debug section is never loaded automatically.
-    if ((bfd_get_section_flags(bfd_, section) & SEC_ALLOC) == 0){
+    if ((bfd_get_section_flags(bfd_, section) & SEC_ALLOC) == 0) {
       return;
     }
     bfd_vma address = data->address;
@@ -238,10 +238,10 @@ class SymbolizeBfd : public Symbolize {
   SymbolizeBfd() : Symbolize() {
   }
 
-  explicit SymbolizeBfd(StackTrace *stack_trace)
-      : Symbolize(stack_trace) {
-    if (stack_trace_ != NULL) {
-      resolve(*stack_trace_);
+  explicit SymbolizeBfd(StackTrace *stacktrace)
+      : Symbolize(stacktrace) {
+    if (stacktrace_ != NULL) {
+      resolve(*stacktrace_);
     }
   }
 
@@ -270,10 +270,10 @@ class SymbolizeBfd : public Symbolize {
   // Perform all the magic to resolve information about particular address.
   bool resolve(void *address, Symbol *symbol) {
     Dl_info symbol_info;
-    if(dladdr(address, &symbol_info) == 0) {
+    if (dladdr(address, &symbol_info) == 0) {
       return false;
     }
-    if(symbol_info.dli_fname == NULL) {
+    if (symbol_info.dli_fname == NULL) {
       return false;
     }
 
@@ -298,8 +298,8 @@ class SymbolizeBfd : public Symbolize {
 
 }  // namespace
 
-Symbolize *symbolize_create_bfd(StackTrace *stack_trace) {
-  return new SymbolizeBfd(stack_trace);
+Symbolize *symbolize_create_bfd(StackTrace *stacktrace) {
+  return new SymbolizeBfd(stacktrace);
 }
 
 }  // namespace internal

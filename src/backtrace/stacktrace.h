@@ -78,6 +78,10 @@ namespace internal {
 
 StackTrace *stacktrace_create_stub();
 
+#ifdef BACKTRACE_HAS_CAPTURE_STACK_BACKTRACE
+StackTrace *stacktrace_create_capture_stack_backtrace();
+#endif
+
 #ifdef BACKTRACE_HAS_EXECINFO
 StackTrace *stacktrace_create_execinfo();
 #endif

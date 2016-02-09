@@ -58,6 +58,11 @@ inline string hex_cast(const T in) {
 #  define BACKTRACE_HAS_EXECINFO
 #endif
 
+#if defined(_MSC_VER)
+#  define BACKTRACE_HAS_CAPTURE_STACK_BACKTRACE
+#  define BACKTRACE_HAS_SYM_FROM_ADDR
+#endif
+
 // Convert build system's defines to a in-project ones.
 #ifdef WITH_BFD
 #  define BACKTRACE_HAS_BFD

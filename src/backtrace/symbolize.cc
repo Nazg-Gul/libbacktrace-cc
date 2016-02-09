@@ -24,19 +24,21 @@
 
 namespace bt {
 
-Symbolize *Symbolize::create(StackTrace *stack_trace) {
+Symbolize *Symbolize::create(StackTrace *stacktrace) {
 #if defined(BACKTRACE_HAS_BFD)
-  return internal::symbolize_create_bfd(stack_trace);
+  return internal::symbolize_create_bfd(stacktrace);
 #elif defined(BACKTRACE_HAS_EXECINFO)
-  return internal::symbolize_create_execinfo(stack_trace);
+  return internal::symbolize_create_execinfo(stacktrace);
+#elif defined(BACKTRACE_HAS_SYM_FROM_ADDR)
+  return internal::symbolize_create_sym_from_addr(stacktrace);
 #else
-  return internal::symbolize_create_stub(stack_trace);
+  return internal::symbolize_create_stub(stacktrace);
 #endif
 }
 
 Symbolize::~Symbolize() {
-  if (stack_trace_ != NULL) {
-    delete stack_trace_;
+  if (stacktrace_ != NULL) {
+    delete stacktrace_;
   }
 }
 

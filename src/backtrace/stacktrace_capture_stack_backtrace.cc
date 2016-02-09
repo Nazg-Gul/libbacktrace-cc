@@ -20,37 +20,54 @@
 //
 // Author: sergey@blender.org (Sergey Sharybin)
 
-#include "backtrace/symbolize.h"
+#include "backtrace/stacktrace.h"
+
+#ifdef BACKTRACE_HAS_CAPTURE_STACK_BACKTRACE
+
+#include <windows.h>
+#include <limits.h>
 
 namespace bt {
 namespace internal {
 
 namespace {
 
-// Stub sybolize implementation.
-class SymbolizeStub : public Symbolize {
+// Stack trace implementation using CaptureStackBackTrace().
+class StackTraceCaptureStackBacktrace : public StackTrace {
  public:
-  SymbolizeStub() : Symbolize() {}
-  explicit SymbolizeStub(StackTrace *stacktrace)
-      : Symbolize(stacktrace) {
-    if (stacktrace_ != NULL) {
-      resolve(*stacktrace_);
-    }
+  StackTraceCaptureStackBacktrace() : StackTrace() {}
+
+  size_t load(void * /*addr*/, size_t depth) {
+    backtrace_buffer_.resize(depth);
+    DWORD num_frames = CaptureStackBackTrace(0,
+                                             (DWORD)depth,
+                                             &backtrace_buffer_[0],
+                                             NULL);
+    backtrace_buffer_.resize(num_frames);
+    // TODO(sergey): Move backtrace_buffer_ to addr if it's not NULL.
+    return num_frames;
   }
 
-  void resolve(const StackTrace& stacktrace) {
-    symbols_.resize(stacktrace.size());
-    for (size_t i = 0; i < stacktrace.size(); ++i) {
-      symbols_[i].address = (size_t)stacktrace[i].address;
-    }
+  size_t size() const {
+    return backtrace_buffer_.size();
   }
+
+  TraceEntry operator[](size_t index) const {
+    assert(index < size());
+    TraceEntry entry(backtrace_buffer_[index]);
+    return entry;
+  }
+ private:
+  vector<void*> backtrace_buffer_;
 };
 
 }  // namespace
 
-Symbolize *symbolize_create_stub(StackTrace *stacktrace) {
-  return new SymbolizeStub(stacktrace);
+StackTrace *stacktrace_create_capture_stack_backtrace() {
+  return new StackTraceCaptureStackBacktrace();
 }
 
 }  // namespace internal
 }  // namespace bt
+
+#endif  // CAPTURE_STACK_BACKTRACE

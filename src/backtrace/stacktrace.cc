@@ -29,7 +29,9 @@
 namespace bt {
 
 StackTrace *StackTrace::create() {
-#ifdef BACKTRACE_HAS_EXECINFO
+#if defined(BACKTRACE_HAS_CAPTURE_STACK_BACKTRACE)
+  return internal::stacktrace_create_capture_stack_backtrace();
+#elif defined(BACKTRACE_HAS_EXECINFO)
   return internal::stacktrace_create_execinfo();
 #else
   return internal::stacktrace_create_stub();

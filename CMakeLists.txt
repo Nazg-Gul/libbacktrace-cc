@@ -37,12 +37,14 @@ add_library(backtrace
 	src/backtrace/backtrace.cc
 	src/backtrace/demangle.cc
 	src/backtrace/stacktrace.cc
+	src/backtrace/stacktrace_capture_stack_backtrace.cc
 	src/backtrace/stacktrace_execinfo.cc
 	src/backtrace/stacktrace_stub.cc
 	src/backtrace/symbolize_bfd.cc
 	src/backtrace/symbolize.cc
 	src/backtrace/symbolize_execinfo.cc
 	src/backtrace/symbolize_stub.cc
+	src/backtrace/symbolize_sym_from_addr.cc
 
 	include/backtrace/backtrace.h
 	src/backtrace/backtrace_util.h

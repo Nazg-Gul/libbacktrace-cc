@@ -30,6 +30,7 @@ namespace bt {
 
 // Human-readable symbol information.
 struct Symbol {
+  // TODO(sergey): This is an int for MSVC, need different approach.
   enum {
     LINE_NONE = -1,
     ADDRESS_NONE = ~((size_t)0),
@@ -68,14 +69,14 @@ struct Symbol {
 class Symbolize {
  public:
   // Create an actual symbolizer implementation.
-  static Symbolize *create(StackTrace *stack_trace = NULL);
+  static Symbolize *create(StackTrace *stacktrace = NULL);
 
   // Default constructor.
   Symbolize()
-  : stack_trace_(NULL) {}
+  : stacktrace_(NULL) {}
 
-  explicit Symbolize(StackTrace *stack_trace)
-  : stack_trace_(stack_trace) {}
+  explicit Symbolize(StackTrace *stacktrace)
+  : stacktrace_(stacktrace) {}
 
   // Default constructor.
   virtual ~Symbolize();
@@ -97,20 +98,24 @@ class Symbolize {
   virtual void resolve(const StackTrace& stacktrace) = 0;
 
  protected:
-  StackTrace *stack_trace_;
+  StackTrace *stacktrace_;
   vector<Symbol> symbols_;
 };
 
 namespace internal {
 
-Symbolize *symbolize_create_stub(StackTrace *stack_trace = NULL);
+Symbolize *symbolize_create_stub(StackTrace *stacktrace = NULL);
 
 #ifdef BACKTRACE_HAS_EXECINFO
-Symbolize *symbolize_create_execinfo(StackTrace *stack_trace = NULL);
+Symbolize *symbolize_create_execinfo(StackTrace *stacktrace = NULL);
 #endif
 
 #ifdef BACKTRACE_HAS_BFD
-Symbolize *symbolize_create_bfd(StackTrace *stack_trace = NULL);
+Symbolize *symbolize_create_bfd(StackTrace *stacktrace = NULL);
+#endif
+
+#ifdef BACKTRACE_HAS_SYM_FROM_ADDR
+Symbolize *symbolize_create_sym_from_addr(StackTrace *stacktrace = NULL);
 #endif
 
 }  // namespace internal
