@@ -47,7 +47,7 @@ class BfdSymbols {
     init(self_object_name_get());
   }
 
-  BfdSymbols(const string& object_name)
+  explicit BfdSymbols(const string& object_name)
       : bfd_(NULL),
         symtab_(NULL),
         dynamic_symtab_(NULL),
@@ -133,11 +133,11 @@ class BfdSymbols {
     // Gather symbol tables themselves.
     size_t symtab_count = 0;
     if (symtab_size > 0) {
-      symtab_ = (asymbol **)malloc(symtab_size);
+      symtab_ = reinterpret_cast<asymbol **>(malloc(symtab_size));
       symtab_count = bfd_canonicalize_symtab(bfd_, symtab_);
     }
     if (dynamic_symtab_size > 0) {
-      dynamic_symtab_ = (asymbol **)malloc(symtab_size);
+      dynamic_symtab_ = reinterpret_cast<asymbol **>(malloc(symtab_size));
       symtab_count = bfd_canonicalize_symtab(bfd_, dynamic_symtab_);
     }
     // Gather .text section.
@@ -167,7 +167,7 @@ class BfdSymbols {
   static void symbol_find_info_cb(bfd * /*bfd*/,
                                   asection *section,
                                   void *data_v) {
-    SymbolInfoData *data = (SymbolInfoData *)data_v;
+    SymbolInfoData *data = reinterpret_cast<SymbolInfoData *>(data_v);
     data->self->symbol_find_info_in_section(section, data);
   }
 
@@ -222,7 +222,7 @@ class BfdSymbols {
     data.base_address = (bfd_vma)base_address;
     bfd_map_over_sections(bfd_,
                           &symbol_find_info_cb,
-                          (void *)&data);
+                          reinterpret_cast<void *>(&data));
     return data.info;
   }
 
@@ -248,8 +248,9 @@ class SymbolizeBfd : public Symbolize {
   void resolve(const StackTrace& stacktrace) {
     symbols_.resize(stacktrace.size());
     for (size_t i = 0; i < stacktrace.size(); ++i) {
-      void *address = (void*)((unsigned char*)(stacktrace[i].address) - 1);
-      resolve(address, &symbols_[i]);
+      unsigned char *address =
+              reinterpret_cast<unsigned char*>(stacktrace[i].address);
+      resolve(reinterpret_cast<void*>(address - 1), &symbols_[i]);
     }
   }
 

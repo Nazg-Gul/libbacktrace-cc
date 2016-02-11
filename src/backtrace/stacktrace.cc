@@ -40,12 +40,12 @@ StackTrace *StackTrace::create() {
 
 void *StackTrace::current_addr_get(void *context) {
 #ifdef BACKTRACE_HAS_UCONTEXT
-  ucontext_t *ucontext = (ucontext_t *)context;
+  ucontext_t *ucontext = reinterpret_cast<ucontext_t *>(context);
   if (ucontext != NULL) {
 #if defined(REG_RIP)  // x86_64
-    return (void *)ucontext->uc_mcontext.gregs[REG_RIP];
+    return reinterpret_cast<void *>(ucontext->uc_mcontext.gregs[REG_RIP]);
 #elif defined(REG_EIP)  // xi686
-    return (void *)ucontext->uc_mcontext.gregs[REG_EIP];
+    return reinterpret_cast<void *>(ucontext->uc_mcontext.gregs[REG_EIP]);
 #else
 #  warning "No clue how to get program counter  from a context"
 #endif

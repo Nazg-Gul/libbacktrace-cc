@@ -55,7 +55,7 @@ class SymbolizeSymFromAddr : public Symbolize {
     // Allocate some working memory.
     const size_t total_size = sizeof(SYMBOL_INFO) + MAX_SYMBOL;
     SYMBOL_INFO *symbol_info;
-    symbol_info = (SYMBOL_INFO *)::operator new(total_size);
+    symbol_info = reinterpret_cast<SYMBOL_INFO *>(::operator new(total_size));
     symbol_info->MaxNameLen = MAX_SYMBOL - 1;
     symbol_info->SizeOfStruct = sizeof(SYMBOL_INFO);
     // Symbolize stacktrace.
