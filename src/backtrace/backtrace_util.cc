@@ -20,64 +20,30 @@
 //
 // Author: sergey@blender.org (Sergey Sharybin)
 
-#ifndef __BACKTRACE_UTIL_H__
-#define __BACKTRACE_UTIL_H__
+#include "backtrace/backtrace_util.h"
 
-#include <cassert>
-#include <map>
-#include <string>
-#include <sstream>
-#include <vector>
+#if defined(_MSC_VER)
+#  include <windows.h>
+#  include <dbghelp.h>
+#endif
 
 namespace bt {
-
-using std::string;
-using std::vector;
-using std::map;
-
-template<typename T>
-inline T hex_cast(const string& in) {
-  T out;
-  std::stringstream ss;
-  ss << in;
-  ss >> std::hex >> out;
-  return out;
-}
-
-template<typename T>
-inline string hex_cast(const T in) {
-  std::stringstream ss;
-  ss << std::hex << in;
-  return "0x" + ss.str();
-}
 
 namespace internal {
 
 #if defined(_MSC_VER)
-void init_symbol_handler();
+void init_symbol_handler() {
+  static bool sym_initialized = false;
+  if (!sym_initialized) {
+    HANDLE process = GetCurrentProcess();
+    DWORD sym_options = SymGetOptions();
+    sym_options |= (SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
+    SymSetOptions(sym_options);
+    SymInitialize(process, NULL, TRUE);
+  }
+}
 #endif
 
 }  // namespace internal
 
 }  // namespace bt
-
-// Check whether execinfo.h is available.
-#if defined(__linux__) || defined(__APPLE__)
-#  define BACKTRACE_HAS_EXECINFO
-#endif
-
-#if defined(_MSC_VER)
-#  define BACKTRACE_HAS_CAPTURE_STACK_BACKTRACE
-#  define BACKTRACE_HAS_STACK_WALK
-#  define BACKTRACE_HAS_SYM_FROM_ADDR
-#endif
-
-// Convert build system's defines to a in-project ones.
-#ifdef WITH_BFD
-#  define BACKTRACE_HAS_BFD
-#endif
-#ifdef WITH_UCONTEXT
-#  define BACKTRACE_HAS_UCONTEXT
-#endif
-
-#endif  /* __BACKTRACE_UTIL_H__ */

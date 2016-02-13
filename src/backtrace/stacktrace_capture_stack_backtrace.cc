@@ -70,4 +70,4 @@ StackTrace *stacktrace_create_capture_stack_backtrace() {
 }  // namespace internal
 }  // namespace bt
 
-#endif  // CAPTURE_STACK_BACKTRACE
+#endif  // BACKTRACE_HAS_CAPTURE_STACK_BACKTRACE

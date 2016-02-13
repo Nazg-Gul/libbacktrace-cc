@@ -35,10 +35,12 @@ endif()
 
 add_library(backtrace
 	src/backtrace/backtrace.cc
+	src/backtrace/backtrace_util.cc
 	src/backtrace/demangle.cc
 	src/backtrace/stacktrace.cc
 	src/backtrace/stacktrace_capture_stack_backtrace.cc
 	src/backtrace/stacktrace_execinfo.cc
+	src/backtrace/stacktrace_stack_walk.cc
 	src/backtrace/stacktrace_stub.cc
 	src/backtrace/symbolize_bfd.cc
 	src/backtrace/symbolize.cc
@@ -58,5 +60,8 @@ if(WITH_EXAMPLES)
 	target_link_libraries(print_backtrace backtrace)
 	if(WITH_BFD)
 		target_link_libraries(print_backtrace bfd dl)
+	endif()
+	if(MSVC)
+		target_link_libraries(print_backtrace dbghelp psapi)
 	endif()
 endif()

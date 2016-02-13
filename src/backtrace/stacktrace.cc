@@ -29,7 +29,9 @@
 namespace bt {
 
 StackTrace *StackTrace::create() {
-#if defined(BACKTRACE_HAS_CAPTURE_STACK_BACKTRACE)
+#if defined(BACKTRACE_HAS_STACK_WALK)
+  return internal::stacktrace_create_stack_walk();
+#elif defined(BACKTRACE_HAS_CAPTURE_STACK_BACKTRACE)
   return internal::stacktrace_create_capture_stack_backtrace();
 #elif defined(BACKTRACE_HAS_EXECINFO)
   return internal::stacktrace_create_execinfo();

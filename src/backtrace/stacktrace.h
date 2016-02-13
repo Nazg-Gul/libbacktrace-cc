@@ -82,6 +82,10 @@ StackTrace *stacktrace_create_stub();
 StackTrace *stacktrace_create_capture_stack_backtrace();
 #endif
 
+#ifdef BACKTRACE_HAS_STACK_WALK
+StackTrace *stacktrace_create_stack_walk();
+#endif
+
 #ifdef BACKTRACE_HAS_EXECINFO
 StackTrace *stacktrace_create_execinfo();
 #endif

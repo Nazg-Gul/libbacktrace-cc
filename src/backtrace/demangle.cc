@@ -25,6 +25,9 @@
 #ifdef __GNUC__
 #  include <cstdlib>
 #  include <cxxabi.h>
+#elif defined(_MSC_VER)
+#  include <windows.h>
+#  include <Dbghelp.h>
 #endif
 
 namespace bt {
@@ -49,6 +52,16 @@ inline string demangle_impl(const string& function_name) {
     result = function_name + "()";
   }
   return result;
+}
+#elif defined(_MSC_VER)
+inline string demangle_impl(const string& function_name) {
+  string demangled_name;
+  demangled_name.reserve(function_name.size() * 2);
+  UnDecorateSymbolName(function_name.c_str(),
+                       &demangled_name[0],
+                       (DWORD)demangled_name.capacity(),
+                       UNDNAME_COMPLETE);
+  return function_name + "()";
 }
 #else
 inline string demangle_impl(const string& function_name) {

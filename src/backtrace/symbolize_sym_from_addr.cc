@@ -30,8 +30,7 @@
 #include <windows.h>
 #include <dbghelp.h>
 
-// TODO(sergey): Consider moving this to CMakeLists.
-#pragma comment(lib, "dbghelp.lib")
+#include "backtrace/demangle.h"
 
 namespace bt {
 namespace internal {
@@ -51,7 +50,7 @@ class SymbolizeSymFromAddr : public Symbolize {
 
   void resolve(const StackTrace& stacktrace) {
     // Make sure symbol table is initialized.
-    init_sym();
+    init_symbol_handler();
     // Allocate some working memory.
     const size_t total_size = sizeof(SYMBOL_INFO) + MAX_SYMBOL;
     SYMBOL_INFO *symbol_info;
@@ -62,24 +61,29 @@ class SymbolizeSymFromAddr : public Symbolize {
     HANDLE process = GetCurrentProcess();
     symbols_.resize(stacktrace.size());
     for (size_t i = 0; i < stacktrace.size(); ++i) {
-      symbols_[i].address = (size_t)stacktrace[i].address;
+      Symbol *symbol = &symbols_[i];
+      symbol->address = (size_t)stacktrace[i].address;
       if (SymFromAddr(process,
                       (DWORD64)(stacktrace[i].address),
                       0,
                       symbol_info)) {
-        symbols_[i].address = symbol_info->Address;
-        symbols_[i].function_name = symbol_info->Name;
+        // Some basic information.
+        symbol->address = (size_t)symbol_info->Address;
+        symbol->function_name = demangle(symbol_info->Name);
+        // File name and line number.
+        DWORD offset_from_symbol;
+        IMAGEHLP_LINE64 line = {0};
+        line.SizeOfStruct = sizeof line;
+        if (SymGetLineFromAddr64(process,
+                                 symbol_info->Address,
+                                 &offset_from_symbol,
+                                 &line))  {
+          symbol->file_name = line.FileName;
+          symbol->line_number = line.LineNumber;
+        }
       }
     }
     delete symbol_info;
-  }
- private:
-  void init_sym() {
-    static bool sym_initialized = false;
-    if (!sym_initialized) {
-      HANDLE process = GetCurrentProcess();
-      SymInitialize(process, NULL, TRUE);
-    }
   }
 };
 
