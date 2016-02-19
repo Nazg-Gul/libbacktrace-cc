@@ -50,17 +50,21 @@ string backtrace_get_string() {
                    ? hex_cast(symbol.address)
                    : "(nil)");
     // Function name.
-    ss << "    " << ((symbol.function_name.size() > 0)
-                            ? symbol.function_name
-                            : "(unknown)");
+    string function_name = ((symbol.function_name.size() > 0)
+                                   ? symbol.function_name
+                                   : "(unknown)");
+    ss << "    " << function_name;
     // Source file or function offset.
     if (symbol.file_name.size() == 0) {
       if (symbol.function_offset != Symbol::OFFSET_NONE) {
         ss << "+" << hex_cast(symbol.function_offset);
       }
     } else {
-      // TODO(sergey): Needs better formation.
-      ss << "    " << symbol.file_name;
+      const int N = 8;
+      size_t pad = ((size_t)((function_name.size() + N - 1) / N)) * N
+                   - function_name.size();
+      ss << std::setfill(' ') << std::setw(pad) << ""
+         << " " << symbol.file_name;
       if (symbol.line_number != Symbol::LINE_NONE) {
          ss << ":" << symbol.line_number;
       }
