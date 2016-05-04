@@ -36,7 +36,7 @@ class StackTraceExecinfo : public StackTrace {
  public:
   StackTraceExecinfo() : StackTrace() {}
 
-  size_t load(void *addr, size_t depth) {
+  size_t load(void * /*addr*/, size_t depth) {
     backtrace_buffer_.resize(depth);
     size_t num_addr = backtrace(&backtrace_buffer_[0], depth);
     backtrace_buffer_.resize(num_addr);

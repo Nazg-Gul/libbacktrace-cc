@@ -40,7 +40,7 @@ class StackTraceStub : public StackTrace {
     return 0;
   }
 
-  TraceEntry operator[](size_t index) const {
+  TraceEntry operator[](size_t /*index*/) const {
     TraceEntry entry;
     return entry;
   }
