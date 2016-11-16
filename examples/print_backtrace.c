@@ -26,10 +26,13 @@
 #include "backtrace/backtrace.h"
 
 void foo(int unused) {
+  (void) unused;  // Ignored,
   backtrace_print(stdout);
 }
 
-int main(int argc, char **atgv) {
+int main(int argc, char **argv) {
+  (void) argc;  // Ignored,
+  (void) argv;  // Ignored,
   foo(0);
   return EXIT_SUCCESS;
 }
