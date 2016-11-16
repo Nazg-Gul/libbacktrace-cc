@@ -56,8 +56,14 @@ class BfdSymbols {
   }
 
   ~BfdSymbols() {
+    if (symtab_ != NULL) {
+      free(symtab_);
+    }
     if (dynamic_symtab_ != NULL) {
       free(dynamic_symtab_);
+    }
+    if (bfd_ != NULL) {
+      bfd_close(bfd_);
     }
   }
 
@@ -65,6 +71,9 @@ class BfdSymbols {
   bool resolve(void *address,
                void *base_address,
                Symbol *symbol) {
+    if (bfd_ == NULL) {
+      return false;
+    }
     SymbolInfo info = symbol_find_info(address, base_address);
     if (info.found) {
       symbol->address = (size_t)address;
@@ -243,6 +252,14 @@ class SymbolizeBfd : public Symbolize {
       : Symbolize(stacktrace) {
     if (stacktrace_ != NULL) {
       resolve(*stacktrace_);
+    }
+  }
+
+  ~SymbolizeBfd() {
+    for (BfdObjectMap::iterator it = bfd_object_map_.begin();
+        it != bfd_object_map_.end();
+        ++it) {
+      delete it->second;
     }
   }
 
