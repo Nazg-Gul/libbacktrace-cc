@@ -142,6 +142,7 @@ class BfdSymbols {
     }
     // Gather .text section.
     text_ = bfd_get_section_by_name(bfd_, ".text");
+    return true;
   }
 
   // Initialize BFD library itself.
