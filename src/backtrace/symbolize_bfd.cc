@@ -153,6 +153,7 @@ class BfdSymbols {
       dynamic_symtab_ = reinterpret_cast<asymbol **>(malloc(symtab_size));
       symtab_count = bfd_canonicalize_symtab(bfd_, dynamic_symtab_);
     }
+    (void) symtab_count;  // Currently ignored.
     // Gather .text section.
     text_ = bfd_get_section_by_name(bfd_, ".text");
     debug_link_ = bfd_get_section_by_name(bfd_, GNU_DEBUGLINK);
