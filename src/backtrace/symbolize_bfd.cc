@@ -32,6 +32,8 @@
 
 #include "backtrace/demangle.h"
 
+#define GNU_DEBUGLINK ".gnu_debuglink"
+
 namespace bt {
 namespace internal {
 
@@ -43,7 +45,8 @@ class BfdSymbols {
       : bfd_(NULL),
         symtab_(NULL),
         dynamic_symtab_(NULL),
-        text_(NULL) {
+        text_(NULL),
+        debug_link_(NULL) {
     init(self_object_name_get());
   }
 
@@ -51,7 +54,8 @@ class BfdSymbols {
       : bfd_(NULL),
         symtab_(NULL),
         dynamic_symtab_(NULL),
-        text_(NULL) {
+        text_(NULL),
+        debug_link_(NULL) {
     init(object_name);
   }
 
@@ -151,6 +155,7 @@ class BfdSymbols {
     }
     // Gather .text section.
     text_ = bfd_get_section_by_name(bfd_, ".text");
+    debug_link_ = bfd_get_section_by_name(bfd_, GNU_DEBUGLINK);
     return true;
   }
 
@@ -205,6 +210,11 @@ class BfdSymbols {
       }
     }
 
+    if (debug_link_ != NULL) {
+      // Workaround memory leak in libbfd.
+      return;
+    }
+
     if (symtab_ != NULL) {
       info.found = bfd_find_nearest_line(bfd_,
                                          section,
@@ -239,7 +249,7 @@ class BfdSymbols {
   bfd *bfd_;
   asymbol **symtab_;
   asymbol **dynamic_symtab_;
-  asection *text_;
+  asection *text_, *debug_link_;
 };
 
 // Sybolize implementation using BFD library.
