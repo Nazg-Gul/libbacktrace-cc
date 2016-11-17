@@ -31,8 +31,11 @@ namespace bt {
 // Human-readable symbol information.
 struct Symbol {
   // TODO(sergey): This is an int for MSVC, need different approach.
-  enum {
+  enum LineCOnstant : signed int {
     LINE_NONE = -1,
+  };
+
+  enum OffsetConstants : size_t {
     ADDRESS_NONE = ~((size_t)0),
     OFFSET_NONE = ~((size_t)0),
   };
