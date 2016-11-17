@@ -26,16 +26,22 @@
 #include "backtrace/backtrace_util.h"
 #include "backtrace/stacktrace.h"
 
+#if (__cplusplus > 199711L) || (defined(_MSC_VER) && _MSC_VER >= 1800)
+#  define BT_SCOPED_ENUM(name, type) enum name : type
+#else
+#  define BT_SCOPED_ENUM(name, type) enum name
+#endif
+
 namespace bt {
 
 // Human-readable symbol information.
 struct Symbol {
   // TODO(sergey): This is an int for MSVC, need different approach.
-  enum LineCOnstant : signed int {
+  BT_SCOPED_ENUM(LineConstant, signed int) {
     LINE_NONE = -1,
   };
 
-  enum OffsetConstants : size_t {
+  BT_SCOPED_ENUM(OffsetConstants, size_t) {
     ADDRESS_NONE = ~((size_t)0),
     OFFSET_NONE = ~((size_t)0),
   };
@@ -124,5 +130,7 @@ Symbolize *symbolize_create_sym_from_addr(StackTrace *stacktrace = NULL);
 }  // namespace internal
 
 }  // namespace bt
+
+#undef BT_SCOPED_ENUM
 
 #endif  // __SYMBOLIZE_H__
